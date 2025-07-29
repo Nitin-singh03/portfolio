@@ -152,7 +152,7 @@
             }
         }
 
-        /* --- Scroll Thread Styles --- */
+        /* --- Scroll Thread/Light Ray Styles --- */
         #scroll-thread-container {
             position: absolute;
             top: 0;
@@ -161,14 +161,15 @@
             height: 100%;
             pointer-events: none;
             z-index: 5;
-            /* Removed display: none; from here */
         }
 
         #scroll-thread-path {
             stroke: var(--color-primary);
-            stroke-width: 2;
+            stroke-width: 4;
+            /* Thicker line for the ray */
             fill: none;
-            filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.7));
+            /* Enhanced glow for the ray */
+            filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8)) drop-shadow(0 0 15px rgba(255, 255, 255, 0.6));
             transition: stroke-dashoffset 0.05s linear;
         }
 
@@ -186,6 +187,7 @@
             -webkit-mask-image: radial-gradient(circle, black 60%, transparent 85%);
             mask-image: radial-gradient(circle, black 60%, transparent 85%);
             animation: float 6s ease-in-out infinite;
+            transition: filter 0.1s ease-out, box-shadow 0.1s ease-out;
         }
 
         .hero-image {
@@ -193,6 +195,86 @@
             height: 100%;
             object-fit: cover;
         }
+
+        /* New CSS for lightning effect on profile picture */
+        .hero-image-container.lightning-effect {
+            animation: lightning-flash 1s ease-out forwards;
+            /* Duration set to 1s */
+        }
+
+        @keyframes lightning-flash {
+            0% {
+                filter: brightness(1);
+                box-shadow: none;
+            }
+
+            10% {
+                filter: brightness(2.5);
+                /* Intense flash */
+                box-shadow: 0 0 50px 15px rgba(255, 255, 255, 0.9), 0 0 100px 30px rgba(255, 255, 255, 0.7);
+            }
+
+            20% {
+                filter: brightness(1);
+                box-shadow: none;
+            }
+
+            30% {
+                filter: brightness(2);
+                /* Slightly less intense secondary flash */
+                box-shadow: 0 0 30px 10px rgba(255, 255, 255, 0.7), 0 0 60px 20px rgba(255, 255, 255, 0.5);
+            }
+
+            40% {
+                filter: brightness(1);
+                box-shadow: none;
+            }
+
+            50% {
+                filter: brightness(2.8);
+                /* Another intense flash */
+                box-shadow: 0 0 60px 20px rgba(255, 255, 255, 0.95), 0 0 120px 40px rgba(255, 255, 255, 0.8);
+            }
+
+            60% {
+                filter: brightness(1);
+                box-shadow: none;
+            }
+
+            70% {
+                filter: brightness(1.5);
+                /* Fading flash */
+                box-shadow: 0 0 20px 5px rgba(255, 255, 255, 0.6), 0 0 40px 10px rgba(255, 255, 255, 0.4);
+            }
+
+            100% {
+                filter: brightness(1);
+                box-shadow: none;
+            }
+        }
+
+        /* New CSS for general element flash */
+        .ray-flash {
+            animation: ray-flash-animation 0.3s ease-out forwards;
+        }
+
+        @keyframes ray-flash-animation {
+            0% {
+                filter: brightness(1) drop-shadow(0 0 0 rgba(255, 255, 255, 0));
+                transform: scale(1);
+            }
+
+            50% {
+                filter: brightness(1.5) drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
+                transform: scale(1.01);
+            }
+
+            100% {
+                filter: brightness(1) drop-shadow(0 0 0 rgba(255, 255, 255, 0));
+                transform: scale(1);
+            }
+        }
+
 
         @keyframes float {
             0% {
@@ -589,7 +671,7 @@
         <div class="smoke three"></div>
     </div>
 
-    <div id="scroll-thread-container" class="hidden">
+    <div id="scroll-thread-container">
         <svg id="scroll-thread-svg" width="100%" height="100%">
             <path id="scroll-thread-path" d=""></path>
         </svg>
@@ -639,7 +721,7 @@
                     </div>
                 </div>
                 <div class="flex justify-center fade-in-up" style="transition-delay: 400ms;">
-                    <div class="hero-image-container">
+                    <div class="hero-image-container" id="profile-image-container">
                         <img src="assets/profile-photo.png" alt="Nitin Singh" class="hero-image"
                             onerror="this.onerror=null;this.src='https://placehold.co/400x400/050505/f0f0f0?text=Profile+Image';">
                     </div>
@@ -703,8 +785,7 @@
                             src="https://simpleicons.org/icons/mongodb.svg" alt="MongoDB">MongoDB</span>
                     <span class="skill-pill glass-hover"><img class="skill-logo"
                             src="https://simpleicons.org/icons/openai.svg" alt="OpenAI">OpenAI API</span>
-                    <span class="skill-pill glass-hover"><img class="skill-logo"
-                            src="https://simpleicons.org/icons/ollama.svg" alt="Ollama">Ollama</span>
+                    <span class="skill-pill glass-hover">Ollama</span>
                     <span class="skill-pill glass-hover">Agentic AI</span>
                     <span class="skill-pill glass-hover"><img class="skill-logo"
                             src="https://simpleicons.org/icons/git.svg" alt="Git">Git</span>
@@ -939,6 +1020,14 @@
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
                         entry.target.classList.add('visible');
+                        // Add ray-flash effect to elements as they become visible
+                        if (!entry.target.classList.contains('hero-image-container')) { // Exclude profile image to keep its specific click effect
+                            entry.target.classList.add('ray-flash');
+                            setTimeout(() => {
+                                entry.target.classList.remove('ray-flash');
+                            }, 300); // Duration of ray-flash animation
+                        }
+
                         if (entry.target.classList.contains('rating-counter')) {
                             animateCounter(entry.target);
                             observer.unobserve(entry.target);
@@ -948,7 +1037,9 @@
                 });
             }, { threshold: 0.3 }); // MODIFIED: Trigger when 30% of the item is visible for a better feel.
 
-            document.querySelectorAll('.fade-in-up, .section-title, .rating-counter, .timeline-item').forEach(el => observer.observe(el));
+            // Observe all relevant elements for flashing
+            document.querySelectorAll('.fade-in-up, .section-title, .rating-counter, .timeline-item, .skill-pill, .profile-card, .project-image-wrapper, .project-content, .timeline-dot').forEach(el => observer.observe(el));
+
 
             // --- Rating Counter Animation ---
             function animateCounter(element) {
@@ -1125,18 +1216,30 @@
                 handleScrollAnimation();
             }
 
-            // Initial call on load (thread remains hidden until clicked)
-            // window.addEventListener('load', generateAndAnimateThread); // Removed this, as it's now triggered by NS click
-            window.addEventListener('resize', generateAndAnimateThread); // Keep resize to adjust path if visible
+            // Ensure thread is generated and animated on load, as it's now visible by default
+            window.addEventListener('load', generateAndAnimateThread);
+            window.addEventListener('resize', generateAndAnimateThread);
 
-            // Toggle thread visibility on NS logo click
+            // Toggle thread visibility on NS logo click (optional, but kept for existing functionality)
             if (nsLogo) {
                 nsLogo.addEventListener('click', () => {
                     threadContainer.classList.toggle('hidden');
                     if (!threadContainer.classList.contains('hidden')) {
-                        // If thread becomes visible, re-generate and animate to ensure it's drawn correctly
-                        generateAndAnimateThread();
+                        generateAndAnimateThread(); // Re-generate if it was hidden and now shown
                     }
+                });
+            }
+
+            // --- Lightning effect on profile picture click ---
+            const profileImageContainer = document.getElementById('profile-image-container');
+            if (profileImageContainer) {
+                profileImageContainer.addEventListener('click', () => {
+                    // Remove existing animation to allow it to re-trigger
+                    profileImageContainer.classList.remove('lightning-effect');
+                    // Force reflow to restart animation
+                    void profileImageContainer.offsetWidth;
+                    profileImageContainer.classList.add('lightning-effect');
+                    // Animation itself will handle removing the effect after 1 second due to 'forwards'
                 });
             }
         });
