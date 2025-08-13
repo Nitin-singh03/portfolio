@@ -295,16 +295,7 @@ body {
     transition: background-color 0.3s, border-color 0.3s, backdrop-filter 0.3s, transform 0.3s;
 }
 
-.glass-hover::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -150%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-    transition: left 0.6s ease;
-}
+/* The ::after pseudo-element creating the shine has been removed */
 
 .glass-hover:hover {
     background-color: var(--glass-bg);
@@ -314,9 +305,7 @@ body {
     transform: translateY(-5px);
 }
 
-.glass-hover:hover::after {
-    left: 150%;
-}
+/* The :hover::after rule has also been removed */
 
 /* --- Skills Section --- */
 .skill-pill {
